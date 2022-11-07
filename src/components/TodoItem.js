@@ -10,29 +10,46 @@ import {
   AccordionActions,
   Button,
   Divider,
+  Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import { useHttp } from "../hooks/http.hook";
 
-export default function TodoItem({
-  title,
-  description,
-  id,
-  done,
-  handleChange,
-  handleUpdate,
-  handleDelete,
-}) {
+export default function TodoItem({ title, description, id, done, deleteTodo }) {
   const [todoTitle, setTitle] = useState(title);
   const [todoDescription, setTodoDescription] = useState(description);
   const [todoDone, setTodoDone] = useState(done);
   const [edit, setEdit] = useState(false);
+  const { loading, request } = useHttp();
+
+  const todoMark = async () => {
+    try {
+      await request(`todos/${id}`, "PATCH", {
+        done: !todoDone,
+      });
+      setTodoDone(!todoDone);
+    } catch (error) {}
+  };
+
+  const updateTodo = async () => {
+    try {
+      if (edit) {
+        const data = await request(`todos/${id}`, "PATCH", {
+          title: todoTitle,
+          description: todoDescription,
+        });
+        console.log(data);
+
+        setTitle(data.title);
+        setTodoDescription(data.description);
+      }
+
+      setEdit(!edit);
+    } catch (error) {}
+  };
 
   return (
-    <Accordion
-      component="form"
-      sx={{ bgcolor: "#9C3083", color: "white" }}
-      // onSubmit={() => {handleUpdate()}}
-    >
+    <Accordion component="form" sx={{ bgcolor: "#9C3083", color: "white" }}>
       <AccordionSummary
         expandIcon={<ExpandMoreIcon style={{ fill: "white" }} />}
         aria-controls={`panel${id}-content`}
@@ -49,10 +66,8 @@ export default function TodoItem({
               },
             }}
             onClick={(event) => event.stopPropagation()}
-            onChange={() => {
-              setTodoDone(!todoDone);
-              // setChecked(!checked);
-            }}
+            checked={todoDone}
+            onChange={todoMark}
           />
 
           <InputBase
@@ -72,26 +87,36 @@ export default function TodoItem({
         </FormControl>
       </AccordionSummary>
       <AccordionDetails>
-        <InputBase
-          fullWidth
-          multiline
-          sx={{
-            color: "white",
-            textDecoration: todoDone ? "line-through" : "none",
-          }}
-          readOnly={!edit}
-          onChange={(e) => {
-            setTodoDescription(e.target.value);
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-          value={todoDescription}
-        ></InputBase>
+        {todoDescription || edit ? (
+          <InputBase
+            fullWidth
+            multiline
+            sx={{
+              color: "white",
+              textDecoration: todoDone ? "line-through" : "none",
+            }}
+            readOnly={!edit}
+            placeholder="Enter description"
+            onChange={(e) => {
+              setTodoDescription(e.target.value);
+            }}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            value={todoDescription}
+          ></InputBase>
+        ) : (
+          <Typography> No description</Typography>
+        )}
       </AccordionDetails>
       <Divider color="white" />
       <AccordionActions>
-        <Button size="small" variant="contained" color="error">
+        <Button
+          size="small"
+          variant="contained"
+          color="error"
+          onClick={deleteTodo}
+        >
           Delete
         </Button>
         <Button
@@ -104,9 +129,7 @@ export default function TodoItem({
               backgroundColor: "white",
             },
           }}
-          onClick={() => {
-            setEdit(!edit);
-          }}
+          onClick={updateTodo}
           endIcon={<EditIcon />}
         >
           {edit ? "Save" : "Edit"}
