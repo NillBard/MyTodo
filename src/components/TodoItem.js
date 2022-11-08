@@ -1,32 +1,49 @@
 import React, { useState } from "react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
-  FormControl,
+  Box,
   Checkbox,
   AccordionDetails,
   AccordionSummary,
   Accordion,
-  InputBase,
   AccordionActions,
   Button,
   Divider,
   Typography,
+  TextField,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import { useHttp } from "../hooks/http.hook";
+import { styled } from "@mui/material/styles";
 
-export default function TodoItem({ title, description, id, done, deleteTodo }) {
+const CssTextField = styled(TextField)({
+  input: { color: "white" },
+  textarea: { color: "white" },
+  "& .MuiInput-underline:after": {
+    borderBottomColor: "white",
+  },
+  "& .MuiInput-underline:before": {
+    borderBottomColor: "white",
+    opacity: 0.4,
+  },
+});
+
+export default function TodoItem({
+  title,
+  description,
+  id,
+  done,
+  deleteTodo,
+  mark,
+  update,
+}) {
   const [todoTitle, setTitle] = useState(title);
   const [todoDescription, setTodoDescription] = useState(description);
   const [todoDone, setTodoDone] = useState(done);
   const [edit, setEdit] = useState(false);
-  const { loading, request } = useHttp();
 
   const todoMark = async () => {
     try {
-      await request(`todos/${id}`, "PATCH", {
-        done: !todoDone,
-      });
+      await mark(id, todoDone);
       setTodoDone(!todoDone);
     } catch (error) {}
   };
@@ -34,16 +51,10 @@ export default function TodoItem({ title, description, id, done, deleteTodo }) {
   const updateTodo = async () => {
     try {
       if (edit) {
-        const data = await request(`todos/${id}`, "PATCH", {
-          title: todoTitle,
-          description: todoDescription,
-        });
-        console.log(data);
-
-        setTitle(data.title);
-        setTodoDescription(data.description);
+        if (todoTitle) {
+          update(id, todoTitle, todoDescription);
+        }
       }
-
       setEdit(!edit);
     } catch (error) {}
   };
@@ -55,8 +66,13 @@ export default function TodoItem({ title, description, id, done, deleteTodo }) {
         aria-controls={`panel${id}-content`}
         id={`panel${id}-header`}
       >
-        <FormControl
-          sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}
+        <Box
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+          }}
         >
           <Checkbox
             sx={{
@@ -65,34 +81,57 @@ export default function TodoItem({ title, description, id, done, deleteTodo }) {
                 color: "white",
               },
             }}
+            disabled={!todoTitle}
             onClick={(event) => event.stopPropagation()}
             checked={todoDone}
             onChange={todoMark}
           />
 
-          <InputBase
-            sx={{
-              color: "white",
-              textDecoration: todoDone ? "line-through" : "none",
-            }}
-            readOnly={!edit}
-            onChange={(e) => {
-              setTitle(e.target.value);
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            value={todoTitle}
-          ></InputBase>
-        </FormControl>
+          {edit ? (
+            <CssTextField
+              variant="standard"
+              fullWidth
+              multiline
+              sx={{
+                maxWidth: 300,
+                textDecoration: todoDone ? "line-through" : "none",
+              }}
+              autoFocus
+              placeholder="Enter title"
+              readOnly={!edit}
+              onChange={(e) => {
+                setTitle(e.target.value);
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              value={todoTitle}
+            ></CssTextField>
+          ) : (
+            <Typography
+              style={{
+                maxWidth: "500px",
+              }}
+              sx={{
+                overflow: "hidden",
+                maxWidth: "500px",
+                wordWrap: "break-word",
+                color: "white",
+                textDecoration: todoDone ? "line-through" : "none",
+              }}
+            >
+              {todoTitle}
+            </Typography>
+          )}
+        </Box>
       </AccordionSummary>
       <AccordionDetails>
-        {todoDescription || edit ? (
-          <InputBase
+        {edit ? (
+          <CssTextField
             fullWidth
             multiline
+            variant="standard"
             sx={{
-              color: "white",
               textDecoration: todoDone ? "line-through" : "none",
             }}
             readOnly={!edit}
@@ -104,9 +143,18 @@ export default function TodoItem({ title, description, id, done, deleteTodo }) {
               e.stopPropagation();
             }}
             value={todoDescription}
-          ></InputBase>
+          ></CssTextField>
         ) : (
-          <Typography> No description</Typography>
+          <Typography
+            sx={{
+              color: "white",
+              textDecoration: todoDone ? "line-through" : "none",
+              wordWrap: "break-word",
+              opacity: 0.8,
+            }}
+          >
+            {todoDescription || "No description"}
+          </Typography>
         )}
       </AccordionDetails>
       <Divider color="white" />
@@ -129,6 +177,7 @@ export default function TodoItem({ title, description, id, done, deleteTodo }) {
               backgroundColor: "white",
             },
           }}
+          disabled={!todoTitle}
           onClick={updateTodo}
           endIcon={<EditIcon />}
         >
