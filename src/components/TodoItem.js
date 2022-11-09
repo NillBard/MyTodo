@@ -55,6 +55,7 @@ export default function TodoItem({
           await update(id, todoTitle, todoDescription);
         }
       }
+
       setEdit(!edit);
     } catch (error) {}
   };

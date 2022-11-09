@@ -75,6 +75,7 @@ function Todo() {
   };
 
   const hiddenDone = async () => {
+    await fetchTodos();
     setHidden(!hidden);
   };
 
