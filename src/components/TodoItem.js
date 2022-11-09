@@ -52,7 +52,7 @@ export default function TodoItem({
     try {
       if (edit) {
         if (todoTitle) {
-          update(id, todoTitle, todoDescription);
+          await update(id, todoTitle, todoDescription);
         }
       }
       setEdit(!edit);
@@ -139,9 +139,6 @@ export default function TodoItem({
             onChange={(e) => {
               setTodoDescription(e.target.value);
             }}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
             value={todoDescription}
           ></CssTextField>
         ) : (
@@ -150,6 +147,7 @@ export default function TodoItem({
               color: "white",
               textDecoration: todoDone ? "line-through" : "none",
               wordWrap: "break-word",
+              whiteSpace: "wrap",
               opacity: 0.8,
             }}
           >

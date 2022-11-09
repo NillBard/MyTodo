@@ -31,7 +31,7 @@ function Todo() {
 
   const deleteTodo = async (id) => {
     try {
-      await request(`todos/${id}`, "DELETE", {});
+      await request(`todos/${id}`, "DELETE");
       setTodos(todos.filter((el) => el.id !== id));
     } catch (error) {}
   };
@@ -66,7 +66,7 @@ function Todo() {
     } catch (error) {}
   };
 
-  const handlePressKey = async (event) => {
+  const handlePressEnter = async (event) => {
     try {
       if (event.key === "Enter") {
         await addTodo();
@@ -92,7 +92,7 @@ function Todo() {
       </CardContent>
       <CardContent sx={{ position: "relative", display: "flex" }}>
         <TodoForm
-          onKeyPress={handlePressKey}
+          onKeyPress={handlePressEnter}
           title={title}
           description={description}
           titleChange={(e) => {
