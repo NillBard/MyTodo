@@ -112,7 +112,7 @@ function Todo() {
         />
       </CardContent>
       <CardContent sx={{ height: 400, overflowY: "scroll" }}>
-        {todos &&
+        {todos.length !== 0 ? (
           todos
             .sort((a, b) => (a.id > b.id ? -1 : 1))
             .filter((item) => {
@@ -132,7 +132,12 @@ function Todo() {
                 mark={mark}
                 update={update}
               />
-            ))}
+            ))
+        ) : (
+          <Typography sx={{ textAlign: "center" }} variant="h4" component="div">
+            List is Empty...
+          </Typography>
+        )}
       </CardContent>
       <CardActions disableSpacing></CardActions>
     </Card>
