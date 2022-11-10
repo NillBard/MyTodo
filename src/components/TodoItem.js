@@ -33,30 +33,34 @@ export default function TodoItem({
   id,
   done,
   deleteTodo,
-  mark,
   update,
 }) {
   const [todoTitle, setTitle] = useState(title);
   const [todoDescription, setTodoDescription] = useState(description);
-  const [todoDone, setTodoDone] = useState(done);
   const [edit, setEdit] = useState(false);
-
-  const todoMark = async () => {
-    try {
-      await mark(id, todoDone);
-      setTodoDone(!todoDone);
-    } catch (error) {}
-  };
 
   const updateTodo = async () => {
     try {
       if (edit) {
         if (todoTitle) {
-          await update(id, todoTitle, todoDescription);
+          await update(id, {
+            title: todoTitle,
+            description: todoDescription,
+          });
         }
       }
-
       setEdit(!edit);
+    } catch (error) {
+      setTodoDescription(description);
+      setTitle(title);
+    }
+  };
+
+  const todoMark = async () => {
+    try {
+      if (todoTitle) {
+        await update(id, { done: !done });
+      }
     } catch (error) {}
   };
 
@@ -84,7 +88,7 @@ export default function TodoItem({
             }}
             disabled={!todoTitle}
             onClick={(event) => event.stopPropagation()}
-            checked={todoDone}
+            checked={done}
             onChange={todoMark}
           />
 
@@ -95,7 +99,7 @@ export default function TodoItem({
               multiline
               sx={{
                 maxWidth: 300,
-                textDecoration: todoDone ? "line-through" : "none",
+                textDecoration: done ? "line-through" : "none",
               }}
               autoFocus
               placeholder="Enter title"
@@ -118,7 +122,7 @@ export default function TodoItem({
                 maxWidth: "500px",
                 wordWrap: "break-word",
                 color: "white",
-                textDecoration: todoDone ? "line-through" : "none",
+                textDecoration: done ? "line-through" : "none",
               }}
             >
               {todoTitle}
@@ -133,7 +137,7 @@ export default function TodoItem({
             multiline
             variant="standard"
             sx={{
-              textDecoration: todoDone ? "line-through" : "none",
+              textDecoration: done ? "line-through" : "none",
             }}
             readOnly={!edit}
             placeholder="Enter description"
@@ -146,7 +150,7 @@ export default function TodoItem({
           <Typography
             sx={{
               color: "white",
-              textDecoration: todoDone ? "line-through" : "none",
+              textDecoration: done ? "line-through" : "none",
               wordWrap: "break-word",
               whiteSpace: "wrap",
               opacity: 0.8,
@@ -177,7 +181,7 @@ export default function TodoItem({
             },
           }}
           disabled={!todoTitle}
-          onClick={updateTodo}
+          onClick={() => updateTodo(todoTitle, todoDescription)}
           endIcon={<EditIcon />}
         >
           {edit ? "Save" : "Edit"}
